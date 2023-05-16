@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器阅读理解</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 引入 Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <!-- 自定义样式 -->
+    <style>
+        .submit-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .answer-container {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 mt-5">
+                <h1 class="text-center mb-4">机器阅读理解</h1>
+                <form id="qa-form">
+                    <div class="mb-3">
+                        <label for="context" class="form-label">文本:</label>
+                        <textarea id="context" name="context" rows="4" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="question" class="form-label">问题:</label>
+                        <input type="text" id="question" name="question" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="question_type" class="form-label">问题类型:</label>
+                        <select id="question_type" name="question_type" class="form-select">
+                            <option value="single_span">单跨抽取式阅读理解</option>
+                            <option value="multiple_choice">多选式阅读理解</option>
+                        </select>
+                    </div>
+                    <div id="options_container" class="mb-3" style="display: none;">
+                        <label for="options" class="form-label">选项（用逗号分隔）:</label>
+                        <input type="text" id="options" name="options" class="form-control" placeholder="选项1, 选项2, 选项3, ...">
+                    </div>
+                    <div class="mb-3 submit-btn-container">
+                        <input type="submit" value="提交" class="btn btn-primary">
+                    </div>
+                </form>
+                <h2 class="text-center mb-3">答案:</h2>
+                <div id="answer" class="answer-container text-center"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $("#question_type").change(function() {
+            const question_type = $(this).val();
+            if (question_type === "multiple_choice") {
+                $("#options_container").show();
+            } else {
+
+            $("#options_container").hide();
+        }
+    });
+
+    $("#qa-form").submit(function(event) {
+        event.preventDefault();
+        const context = $("#context").val();
+        const question = $("#question").val();
+        const question_type = $("#question_type").val();
+        const options = $("#options").val().split(',').map(option => option.trim());
+
+        const data = {
+            context: context,
+            question: question,
+            question_type: question_type,
+            options: options
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/predict",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function(response) {
+                $("#answer").text(response.answer);
+            },
+            error: function() {
+                alert("请求失败。");
+            }
+        });
+    });
+</script>
+</body>
+</html>
